@@ -1,0 +1,25 @@
+{
+  "name": "webrtc-adapter",
+  "version": "0.0.1",
+  "description": "Commonjs adapter.js browser compatibility shim for webRTC",
+  "main": "adapter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/willscott/webrtc-adapter.git"
+  },
+  "keywords": [
+    "webrtc",
+    "adapter.js",
+    "shim",
+    "browserify"
+  ],
+  "author": "Will Scott <willscott@gmail.com> (https://wills.co.tt)",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/willscott/webrtc-adapter/issues"
+  },
+  "homepage": "https://github.com/willscott/webrtc-adapter"
+}
