@@ -1,8 +1,10 @@
 /*jslint node:true*/
 /*globals RTCPeerConnection, mozRTCPeerConnection, webkitRTCPeerConnection */
+/*globals RTCSessionDescription, mozRTCSessionDescription */
 'use strict';
 
 var myRTCPeerConnection = null;
+var myRTCSessionDescription = null;
 
 var renameIceURLs = function (config) {
   if (!config) {
@@ -18,6 +20,7 @@ var renameIceURLs = function (config) {
   return config;
 };
 
+// Unify PeerConnection Object.
 if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = RTCPeerConnection;
 } else if (typeof mozRTCPeerConnection !== 'undefined') {
@@ -29,4 +32,12 @@ if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = webkitRTCPeerConnection;
 }
 
+// Unify SessionDescrption Object.
+if (typeof RTCSessionDescription !== 'undefined') {
+  myRTCSessionDescription = RTCSessionDescription;
+} else if (typeof mozRTCSessionDescription !== 'undefined') {
+  myRTCSessionDescription = mozRTCSessionDescription;
+}
+
 exports.RTCPeerConnection = myRTCPeerConnection;
+exports.RTCSessionDescription = myRTCSessionDescription;
