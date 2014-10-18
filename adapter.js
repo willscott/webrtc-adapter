@@ -6,7 +6,7 @@
 
 var myRTCPeerConnection = null;
 var myRTCSessionDescription = null;
-var myRTCIceCandiate = null;
+var myRTCIceCandidate = null;
 
 var renameIceURLs = function (config) {
   if (!config) {
