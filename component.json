@@ -1,0 +1,15 @@
+{
+  "name": "webrtc-adapter",
+  "version": "0.0.3",
+  "repo": "willscott/webrtc-adapter",
+  "description": "Commonjs adapter.js browser compatibility shim for webRTC",
+  "keywords": [
+    "webrtc",
+    "adapter.js",
+    "shim"
+  ],
+  "license": "Apache 2.0",
+  "scripts": {
+    "adapter.js"
+  }
+}
