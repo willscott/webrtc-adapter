@@ -22,6 +22,24 @@ var renameIceURLs = function (config) {
   return config;
 };
 
+var fixChromeStatsResponse = function(response) {
+  var standardReport = {};
+  var reports = response.result();
+  reports.forEach(function(report) {
+    var standardStats = {
+      id: report.id,
+      timestamp: report.timestamp,
+      type: report.type
+    };
+    report.names().forEach(function(name) {
+      standardStats[name] = report.stat(name);
+    });
+    standardReport[standardStats.id] = standardStats;
+  });
+
+  return standardReport;
+};
+
 // Unify PeerConnection Object.
 if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = RTCPeerConnection;
@@ -31,7 +49,19 @@ if (typeof RTCPeerConnection !== 'undefined') {
     return new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
   };
 } else if (typeof webkitRTCPeerConnection !== 'undefined') {
-  myRTCPeerConnection = webkitRTCPeerConnection;
+  // Chrome returns a nonstandard, non-JSON-ifiable response from getStats.
+  myRTCPeerConnection = function(configuration, constraints) {
+    var pc = new webkitRTCPeerConnection(configuration, constraints);
+    var boundGetStats = pc.getStats.bind(pc);
+    pc.getStats = function(selector, successCallback, failureCallback) {
+      var successCallbackWrapper = function(chromeStatsResponse) {
+        successCallback(fixChromeStatsResponse(chromeStatsResponse));
+      };
+      // Chrome also takes its arguments in the wrong order.
+      boundGetStats(successCallbackWrapper, failureCallback, selector);
+    };
+    return pc;
+  };
 }
 
 // Unify SessionDescrption Object.
