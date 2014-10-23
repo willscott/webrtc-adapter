@@ -26,12 +26,12 @@ var fixChromeStatsResponse = function(response) {
   var standardReport = {};
   var reports = response.result();
   reports.forEach(function(report) {
-    var standardStats = {};
-    standardStats.id = report.id;
-    standardStats.timestamp = report.timestamp;
-    standardStats.type = report.type;
-    var names = report.names();
-    names.forEach(function(name) {
+    var standardStats = {
+      id: report.id,
+      timestamp: report.timestamp,
+      type: report.type
+    };
+    report.names().forEach(function(name) {
       standardStats[name] = report.stat(name);
     });
     standardReport[standardStats.id] = standardStats;
