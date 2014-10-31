@@ -44,9 +44,27 @@ var fixChromeStatsResponse = function(response) {
 if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = RTCPeerConnection;
 } else if (typeof mozRTCPeerConnection !== 'undefined') {
-  // Firefox uses 'url' rather than 'urls' for RTCIceServer.urls
   myRTCPeerConnection = function (configuration, constraints) {
-    return new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
+    // Firefox uses 'url' rather than 'urls' for RTCIceServer.urls
+    var pc = new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
+
+    // Firefox doesn't fire 'onnegotiationneeded' when a data channel is created
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=840728
+    var dataChannelAlreadyCreated = false;
+    var boundCreateDataChannel = pc.createDataChannel.bind(pc);
+    pc.createDataChannel = function(label, dataChannelDict) {
+      var dc = boundCreateDataChannel(label, dataChannelDict);
+      if (!dataChannelAlreadyCreated) {
+        dataChannelAlreadyCreated = true;
+        if (pc.onnegotiationneeded) {
+          var event = new Event('negotiationneeded');
+          pc.onnegotiationneeded(event);
+        }
+      }
+      return dc;
+    };
+
+    return pc;
   };
 } else if (typeof webkitRTCPeerConnection !== 'undefined') {
   // Chrome returns a nonstandard, non-JSON-ifiable response from getStats.
