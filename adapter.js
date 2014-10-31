@@ -40,6 +40,20 @@ var fixChromeStatsResponse = function(response) {
   return standardReport;
 };
 
+var sessionHasData = function(desc) {
+  if (!desc) {
+    return false;
+  }
+  var hasData = false;
+  var prefix = 'm=application';
+  desc.sdp.split('\n').forEach(function(line) {
+    if (line.slice(0, prefix.length) === prefix) {
+      hasData = true;
+    }
+  });
+  return hasData;
+};
+
 // Unify PeerConnection Object.
 if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = RTCPeerConnection;
@@ -50,12 +64,16 @@ if (typeof RTCPeerConnection !== 'undefined') {
 
     // Firefox doesn't fire 'onnegotiationneeded' when a data channel is created
     // https://bugzilla.mozilla.org/show_bug.cgi?id=840728
-    var dataChannelAlreadyCreated = false;
+    var dataEnabled = false;
     var boundCreateDataChannel = pc.createDataChannel.bind(pc);
     pc.createDataChannel = function(label, dataChannelDict) {
       var dc = boundCreateDataChannel(label, dataChannelDict);
-      if (!dataChannelAlreadyCreated) {
-        dataChannelAlreadyCreated = true;
+      if (sessionHasData(pc.localDescription) ||
+          sessionHasData(pc.remoteDescription)) {
+        dataEnabled = true;
+      }
+      if (!dataEnabled) {
+        dataEnabled = true;
         if (pc.onnegotiationneeded) {
           var event = new Event('negotiationneeded');
           pc.onnegotiationneeded(event);
