@@ -40,13 +40,47 @@ var fixChromeStatsResponse = function(response) {
   return standardReport;
 };
 
+var sessionHasData = function(desc) {
+  if (!desc) {
+    return false;
+  }
+  var hasData = false;
+  var prefix = 'm=application';
+  desc.sdp.split('\n').forEach(function(line) {
+    if (line.slice(0, prefix.length) === prefix) {
+      hasData = true;
+    }
+  });
+  return hasData;
+};
+
 // Unify PeerConnection Object.
 if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = RTCPeerConnection;
 } else if (typeof mozRTCPeerConnection !== 'undefined') {
-  // Firefox uses 'url' rather than 'urls' for RTCIceServer.urls
   myRTCPeerConnection = function (configuration, constraints) {
-    return new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
+    // Firefox uses 'url' rather than 'urls' for RTCIceServer.urls
+    var pc = new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
+
+    // Firefox doesn't fire 'onnegotiationneeded' when a data channel is created
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=840728
+    var dataEnabled = false;
+    var boundCreateDataChannel = pc.createDataChannel.bind(pc);
+    pc.createDataChannel = function(label, dataChannelDict) {
+      var dc = boundCreateDataChannel(label, dataChannelDict);
+      if (!dataEnabled) {
+        dataEnabled = true;
+        if (pc.onnegotiationneeded &&
+            !sessionHasData(pc.localDescription) &&
+            !sessionHasData(pc.remoteDescription)) {
+          var event = new Event('negotiationneeded');
+          pc.onnegotiationneeded(event);
+        }
+      }
+      return dc;
+    };
+
+    return pc;
   };
 } else if (typeof webkitRTCPeerConnection !== 'undefined') {
   // Chrome returns a nonstandard, non-JSON-ifiable response from getStats.
