@@ -68,13 +68,11 @@ if (typeof RTCPeerConnection !== 'undefined') {
     var boundCreateDataChannel = pc.createDataChannel.bind(pc);
     pc.createDataChannel = function(label, dataChannelDict) {
       var dc = boundCreateDataChannel(label, dataChannelDict);
-      if (sessionHasData(pc.localDescription) ||
-          sessionHasData(pc.remoteDescription)) {
-        dataEnabled = true;
-      }
       if (!dataEnabled) {
         dataEnabled = true;
-        if (pc.onnegotiationneeded) {
+        if (pc.onnegotiationneeded &&
+            !sessionHasData(pc.localDescription) &&
+            !sessionHasData(pc.remoteDescription)) {
           var event = new Event('negotiationneeded');
           pc.onnegotiationneeded(event);
         }
