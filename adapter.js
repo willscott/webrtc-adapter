@@ -40,6 +40,17 @@ var fixChromeStatsResponse = function(response) {
   return standardReport;
 };
 
+var fixFirefoxStatsResponse = function(response) {
+  // This doesn't substantively change the response, but processes it here
+  // Giving the response directly to the callback gives an object w/o interface
+  // https://developer.mozilla.org/en-US/docs/Mozilla/WebIDL_bindings#ChromeOnly
+  var standardReport = {};
+  response.forEach(function (report) {
+    standardReport[report.id] = report;
+  });
+  return standardReport;
+};
+
 var sessionHasData = function(desc) {
   if (!desc) {
     return false;
@@ -61,6 +72,15 @@ if (typeof RTCPeerConnection !== 'undefined') {
   myRTCPeerConnection = function (configuration, constraints) {
     // Firefox uses 'url' rather than 'urls' for RTCIceServer.urls
     var pc = new mozRTCPeerConnection(renameIceURLs(configuration), constraints);
+
+    // Firefox stats response is only visible 'ChromeOnly' so process it here
+    var boundGetStats = pc.getStats.bind(pc);
+    pc.getStats = function(selector, successCallback, failureCallback) {
+      var successCallbackWrapper = function(firefoxStatsResponse) {
+        successCallback(fixFirefoxStatsResponse(firefoxStatsResponse));
+      };
+      boundGetStats(selector, successCallbackWrapper, failureCallback);
+    };
 
     // Firefox doesn't fire 'onnegotiationneeded' when a data channel is created
     // https://bugzilla.mozilla.org/show_bug.cgi?id=840728
