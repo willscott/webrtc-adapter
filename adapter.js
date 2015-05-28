@@ -41,7 +41,6 @@ var fixChromeStatsResponse = function(response) {
 };
 
 var fixFirefoxStatsResponse = function(response) {
-  // This doesn't substantively change the response, but processes it here
   // Giving the response directly to the callback gives an object w/o interface
   // https://developer.mozilla.org/en-US/docs/Mozilla/WebIDL_bindings#ChromeOnly
   var standardReport = {};
