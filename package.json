@@ -1,6 +1,6 @@
 {
   "name": "webrtc-adapter",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Commonjs adapter.js browser compatibility shim for webRTC",
   "main": "adapter.js",
   "scripts": {
